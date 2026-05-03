@@ -1,0 +1,415 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Property Working — Amol Developers</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400&family=DM+Mono:wght@300;400&family=Syne:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+<script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+<script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+<script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0;}
+  html,body{height:100%;background:#07080D;}
+  #root{min-height:100%;}
+  input,select,textarea{font-family:'DM Mono',monospace;}
+  input[type=number]::-webkit-inner-spin-button{opacity:.15;}
+  input::placeholder{color:#252C40;}
+  input:focus,textarea:focus{outline:none;border-color:#7A6228!important;}
+  button{cursor:pointer;}
+  ::-webkit-scrollbar{width:5px;}
+  ::-webkit-scrollbar-track{background:transparent;}
+  ::-webkit-scrollbar-thumb{background:#1C2133;border-radius:3px;}
+  input[type=range]{-webkit-appearance:none;appearance:none;height:2px;background:#252C40;border-radius:2px;outline:none;width:100%;}
+  input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:20px;height:20px;border-radius:50%;background:#C9A84C;cursor:pointer;box-shadow:0 0 12px rgba(201,168,76,0.5);}
+  .fu{animation:fu .3s cubic-bezier(.4,0,.2,1) both;}
+  @keyframes fu{from{opacity:0;transform:translateY(14px);}to{opacity:1;transform:translateY(0);}}
+  .chvr:hover{border-color:#7A6228!important;background:rgba(201,168,76,0.04)!important;}
+  .genbtn:hover{box-shadow:0 8px 40px rgba(201,168,76,.45)!important;transform:translateY(-2px);}
+  .rmbtn:hover{opacity:1!important;}
+  .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.85);z-index:100;display:flex;align-items:center;justify-content:center;padding:20px;backdrop-filter:blur(6px);}
+  .modal-box{background:#0F1219;border:1px solid #C9A84C;border-radius:14px;width:100%;max-width:640px;max-height:80vh;display:flex;flex-direction:column;overflow:hidden;}
+  textarea.prompt-box{background:#07080D;border:none;color:#A0A8C0;font-family:'DM Mono',monospace;font-size:11px;line-height:1.7;padding:20px;flex:1;resize:none;min-height:260px;}
+  textarea.prompt-box:focus{outline:none;}
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script type="text/babel">
+const { useState, useEffect, useRef } = React;
+
+const LOGO_B64 = "/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAUDBAQEAwUEBAQFBQUGBwwIBwcHBw8LCwkMEQ8SEhEPERETFhwXExQaFRERGCEYGh0dHx8fExciJCIeJBweHx7/2wBDAQUFBQcGBw4ICA4eFBEUHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh7/wAARCAEaAZADASIAAhEBAxEB/8QAHwAAAQUBAQEBAQEAAAAAAAAAAAECAwQFBgcICQoL/8QAtRAAAgEDAwIEAwUFBAQAAAF9AQIDAAQRBRIhMUEGE1FhByJxFDKBkaEII0KxwRVS0fAkM2JyggkKFhcYGRolJicoKSo0NTY3ODk6Q0RFRkdISUpTVFVWV1hZWmNkZWZnaGlqc3R1dnd4eXqDhIWGh4iJipKTlJWWl5iZmqKjpKWmp6ipqrKztLW2t7i5usLDxMXGx8jJytLT1NXW19jZ2uHi4+Tl5ufo6erx8vP09fb3+Pn6/8QAHwEAAwEBAQEBAQEBAQAAAAAAAAECAwQFBgcICQoL/8QAtREAAgECBAQDBAcFBAQAAQJ3AAECAxEEBSExBhJBUQdhcRMiMoEIFEKRobHBCSMzUvAVYnLRChYkNOEl8RcYGRomJygpKjU2Nzg5OkNERUZHSElKU1RVVldYWVpjZGVmZ2hpanN0dXZ3eHl6goOEhYaHiImKkpOUlZaXmJmaoqOkpaanqKmqsrO0tba3uLm6wsPExcbHyMnK0tPU1dbX2Nna4uPk5ebn6Onq8vP09fb3+Pn6/9oADAMBAAIRAxEAPwD7LooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiig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QVPuCCKt0UyeaWmuxxdv8OtO+2Wsupa74j1m3tJlngtNQ1EywrIhyjMMAyFSARvLYIB6iu0ooosOdSU/iYUUUUEBRRRQAUUUUAFFFFABRRRQAUUUUAFFFFABRRRQAUUUUAFFFFABRRRQAUUUUAFFFFABRRRQAUUUUAFFFFABRRRQAUUUUAFFFFABRRRQAUUUUAFFFFABRRRQAUUUUAFFFFABRRRQAUUUUAFFFFABRRRQAUUUUAFFFFABRRRQAUUUUAFFFFABRRRQAUUUUAFFFFABRRRQAUUUUAFFFFABRRRQAUUUUAFFFFABRRRQAUUUUAFFFFABRRRQAUUUUAFFFFABRRRQAUUUUAFFFFABRRRQAUUUUAFFFFABRRRQAUUUUAFFFFABRRRQAUUUUAFFFFABRRRQAUUUUAFFFFABRRRQAUUUUAFFFFABRRRQAUUUUAFFFFABRRRQAUUUUAFFFFABRRRQAUUUUAFFFFABRRRQAUUUUAFFFFABRRRQAUUUUAFFFFABRRRQAUUUUAFFFFABRRRQAUUUUAFFFFABRRRQAUUUUAFFFFABRRRQAUUUUAFFFFABRRRQAUUUUAFFFFABRRRQAUUUUAFFFFABRRRQAUUUUAFFFFABRRRQAUUUUAFFFFABRRRQB//Z";
+
+const C = {
+  bg:'#07080D',surface:'#0F1219',elevated:'#151923',border:'#1C2133',
+  gold:'#C9A84C',goldLight:'#E0BA6A',goldDim:'#7A6228',
+  text:'#EDE8DC',muted:'#626880',dim:'#252C40',input:'#0B0D14',red:'#E05555',
+};
+const font={display:"'Cormorant Garamond',serif",mono:"'DM Mono',monospace",ui:"'Syne',sans-serif"};
+
+const fmtINR=(n)=>{const num=parseFloat(n);if(!n||isNaN(num)||num===0)return'—';return'₹ '+num.toLocaleString('en-IN',{maximumFractionDigits:0});};
+const crLabel=(n)=>{const num=parseFloat(n);if(!n||isNaN(num)||num===0)return'';if(num>=10000000)return`${(num/10000000).toFixed(2)} Cr`;if(num>=100000)return`${(num/100000).toFixed(2)} L`;return'';};
+const inp=(extra={})=>({background:C.input,border:`1px solid ${C.border}`,borderRadius:7,color:C.text,padding:'11px 14px',width:'100%',fontFamily:font.mono,fontSize:13,transition:'border-color 0.2s',...extra});
+const lbl={display:'block',color:C.muted,fontSize:10,letterSpacing:'0.12em',textTransform:'uppercase',fontFamily:font.ui,fontWeight:600,marginBottom:7};
+
+function SHead({title,sub}){return(<div style={{marginBottom:28}}><div style={{fontFamily:font.display,fontSize:28,fontWeight:500,color:C.text,letterSpacing:'-0.01em',lineHeight:1.1}}>{title}</div>{sub&&<div style={{fontFamily:font.mono,fontSize:11,color:C.muted,marginTop:6}}>{sub}</div>}</div>);}
+function TotalBar({label,value}){return(<div style={{background:`rgba(201,168,76,0.06)`,border:`1px solid ${C.gold}`,borderRadius:10,padding:'14px 18px',display:'flex',justifyContent:'space-between',alignItems:'center',marginTop:14}}><div><div style={{fontFamily:font.ui,fontSize:10,color:C.muted,textTransform:'uppercase',letterSpacing:'0.1em',fontWeight:600}}>{label}</div><div style={{fontFamily:font.display,fontSize:26,color:C.gold,marginTop:3}}>{fmtINR(value)}</div></div>{crLabel(value)&&<div style={{fontFamily:font.mono,fontSize:13,color:C.goldDim}}>{crLabel(value)}</div>}</div>);}
+
+function PromptModal({prompt,onClose}){
+  const [copied,setCopied]=useState(false);
+  const copy=()=>{navigator.clipboard.writeText(prompt).then(()=>{setCopied(true);setTimeout(()=>setCopied(false),2500);});};
+  return(
+    <div className="modal-overlay" onClick={e=>{if(e.target===e.currentTarget)onClose();}}>
+      <div className="modal-box">
+        <div style={{padding:'20px 22px 16px',borderBottom:`1px solid ${C.border}`,display:'flex',justifyContent:'space-between',alignItems:'center'}}>
+          <div>
+            <div style={{fontFamily:font.display,fontSize:20,color:C.text,fontWeight:500}}>Workbook Prompt Ready</div>
+            <div style={{fontFamily:font.mono,fontSize:10,color:C.muted,marginTop:3}}>Copy · Paste into Claude · Workbook generates automatically</div>
+          </div>
+          <button onClick={onClose} style={{background:'none',border:`1px solid ${C.border}`,borderRadius:6,color:C.muted,padding:'6px 12px',fontFamily:font.mono,fontSize:11}}>✕ Close</button>
+        </div>
+        <textarea className="prompt-box" readOnly value={prompt}/>
+        <div style={{padding:'14px 22px',borderTop:`1px solid ${C.border}`,display:'flex',gap:12}}>
+          <button onClick={copy} style={{flex:1,background:copied?`rgba(74,158,110,0.15)`:`rgba(201,168,76,0.12)`,border:`1px solid ${copied?'#4A9E6E':C.gold}`,borderRadius:9,padding:'13px',fontFamily:font.display,fontSize:18,fontWeight:500,color:copied?'#4A9E6E':C.gold,transition:'all .2s'}}>
+            {copied?'✓ Copied to Clipboard':'Copy Prompt'}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function App(){
+  const [step,setStep]=useState(0);
+  const [showModal,setShowModal]=useState(false);
+  const [generatedPrompt,setGeneratedPrompt]=useState('');
+  const [form,setForm]=useState({
+    mode:'',projectName:'',location:'Hyderabad',loadingFactor:1.40,
+    floors:[{label:'Ground Floor',carpetArea:'',saleRate:''},{label:'First Floor',carpetArea:'',saleRate:''}],
+    land:{acquisition:'',stampDuty:'',brokerage:''},
+    construction:[{name:'Residential Floors',area:'',rate:'',autoArea:true},{name:'Cellar / Basement',area:'',rate:'',autoArea:false}],
+    interest:{constructionRate:12,constructionTenure:1,landRate:12,landTenure:2},
+    saleRates:{premium:'',base:'',rental:''},
+    investorShare:55,
+    exits:{duringConstruction:true,outrightPremium:true,outrightBase:true,floorByFloor:false,leaseRental:false},
+  });
+
+  const set=(path,value)=>{setForm(prev=>{const next=JSON.parse(JSON.stringify(prev));const keys=path.split('.');let obj=next;for(let i=0;i<keys.length-1;i++)obj=obj[keys[i]];obj[keys[keys.length-1]]=value;return next;});};
+  const MAX=8;
+  const goNext=()=>{let n=step+1;if(n===7&&form.mode==='outright')n=8;setStep(n);};
+  const goPrev=()=>{let p=step-1;if(p===7&&form.mode==='outright')p=6;setStep(p);};
+
+  const tLand=(+form.land.acquisition||0)+(+form.land.stampDuty||0)+(+form.land.brokerage||0);
+  const tCarpet=form.floors.reduce((s,f)=>s+(+f.carpetArea||0),0);
+  const tConst=form.construction.reduce((s,c)=>s+(c.autoArea?tCarpet:(+c.area||0))*(+c.rate||0),0);
+  const tSBA=form.floors.reduce((s,f)=>s+(+f.carpetArea||0)*form.loadingFactor,0);
+  const tCost=tLand+tConst;
+
+  const allLabels=['Mode','Basics','Floors','Land','Build','Finance','Exits','Split','Review'];
+  const visLabels=form.mode==='outright'?['Mode','Basics','Floors','Land','Build','Finance','Exits','Review']:allLabels;
+  const dIdx=(form.mode==='outright'&&step===8)?7:step;
+  const dTot=visLabels.length-1;
+
+  const buildPrompt=()=>{
+    const mLabel={development:'Development Model',outright:'Outright Purchase Model',both:'Both Models'}[form.mode];
+    let p=`Let's do the working for **${form.projectName}** in **${form.location}**.\n\n`;
+    p+=`**Model:** ${mLabel}\n**Loading Factor:** ${form.loadingFactor}x\n\n**Floor Schedule:**\n`;
+    form.floors.forEach(f=>{p+=`- ${f.label}: Carpet ${f.carpetArea} sqft @ ₹${Number(f.saleRate).toLocaleString('en-IN')}/sqft SBA\n`;});
+    p+=`\n**Land Cost:**\n- Acquisition: ₹${form.land.acquisition}\n- Stamp Duty & Registration: ₹${form.land.stampDuty}\n- Brokerage: ₹${form.land.brokerage}\n`;
+    p+=`\n**Construction:**\n`;
+    form.construction.forEach(c=>{const area=c.autoArea?tCarpet:(+c.area||0);p+=`- ${c.name}: ${area} sqft @ ₹${c.rate}/sqft\n`;});
+    p+=`\n**Interest:**\n- Construction: ${form.interest.constructionRate}% p.a. × ${form.interest.constructionTenure} yr\n- Land: ${form.interest.landRate}% p.a. × ${form.interest.landTenure} yr\n`;
+    p+=`\n**Sale Rates:**\n- Premium: ₹${form.saleRates.premium}/sqft SBA\n- Base: ₹${form.saleRates.base}/sqft SBA\n`;
+    if(form.exits.leaseRental&&form.saleRates.rental)p+=`- Monthly Rental: ₹${form.saleRates.rental}/sqft/month\n`;
+    const em={duringConstruction:'Sell During Construction',outrightPremium:'Outright Sale @ Premium',outrightBase:'Outright Sale @ Base',floorByFloor:'Floor-by-Floor @ Market',leaseRental:'Lease / Rental Yield'};
+    p+=`\n**Exits to model:**\n`;
+    Object.entries(form.exits).filter(([,v])=>v).forEach(([k])=>{p+=`- ${em[k]}\n`;});
+    if(form.mode!=='outright')p+=`\n**Investor Share:** ${form.investorShare}%\n**Developer Share:** ${100-form.investorShare}%`;
+    return p;
+  };
+
+  const handleGenerate=()=>{setGeneratedPrompt(buildPrompt());setShowModal(true);};
+
+  const steps={
+    0:()=>(
+      <div className="fu" key={0}>
+        <div style={{textAlign:'center',marginBottom:44,paddingTop:8}}>
+          <div style={{fontFamily:font.display,fontSize:12,color:C.gold,letterSpacing:'0.25em',textTransform:'uppercase',marginBottom:16}}>Feasibility Builder</div>
+          <div style={{fontFamily:font.display,fontSize:38,color:C.text,fontWeight:500,letterSpacing:'-0.02em',lineHeight:1.1,marginBottom:10}}>
+            How is this<br/><em style={{color:C.gold}}>deal structured?</em>
+          </div>
+          <div style={{fontFamily:font.mono,fontSize:11,color:C.muted}}>Select a model to begin</div>
+        </div>
+        <div style={{display:'flex',flexDirection:'column',gap:14}}>
+          {[
+            {key:'development',icon:'◈',label:'Development Deal',desc:'Investor brings land · Developer builds · Revenue split',badge:'JDA / DAGPA'},
+            {key:'outright',icon:'◆',label:'Outright Purchase',desc:'Developer acquires land · Builds · Sells from own books',badge:'Own Books'},
+            {key:'both',icon:'◎',label:'Compare Both Models',desc:'Side-by-side Development vs Outright in one workbook',badge:'Full Picture'},
+          ].map(opt=>(
+            <button key={opt.key} className="chvr" onClick={()=>{set('mode',opt.key);goNext();}}
+              style={{background:C.surface,border:`1px solid ${C.border}`,borderRadius:12,padding:'18px 20px',display:'flex',alignItems:'center',gap:18,textAlign:'left',transition:'all 0.2s',width:'100%'}}>
+              <div style={{width:44,height:44,borderRadius:9,background:`rgba(201,168,76,0.1)`,display:'flex',alignItems:'center',justifyContent:'center',fontSize:18,color:C.gold,flexShrink:0}}>{opt.icon}</div>
+              <div style={{flex:1}}>
+                <div style={{fontFamily:font.display,fontSize:20,color:C.text,fontWeight:600,letterSpacing:'-0.01em'}}>{opt.label}</div>
+                <div style={{fontFamily:font.mono,fontSize:11,color:C.muted,marginTop:3}}>{opt.desc}</div>
+              </div>
+              <div style={{background:C.dim,borderRadius:5,padding:'3px 9px',fontFamily:font.ui,fontSize:9,color:C.muted,letterSpacing:'0.08em',textTransform:'uppercase',flexShrink:0}}>{opt.badge}</div>
+            </button>
+          ))}
+        </div>
+      </div>
+    ),
+    1:()=>(
+      <div className="fu" key={1}>
+        <SHead title="Project Details" sub="Name and identity for this deal"/>
+        <div style={{display:'flex',flexDirection:'column',gap:20}}>
+          <div><label style={lbl}>Project Name</label><input style={inp()} placeholder="e.g. Banjara Hills Residential Tower" value={form.projectName} onChange={e=>set('projectName',e.target.value)}/></div>
+          <div><label style={lbl}>Location</label><input style={inp()} value={form.location} onChange={e=>set('location',e.target.value)}/></div>
+          <div>
+            <label style={lbl}>Loading Factor <span style={{color:C.dim,fontWeight:400,textTransform:'none',letterSpacing:0}}>· SBA = Carpet × Factor</span></label>
+            <input style={inp()} type="number" step="0.01" value={form.loadingFactor} onChange={e=>set('loadingFactor',parseFloat(e.target.value)||1.40)}/>
+            <div style={{fontFamily:font.mono,fontSize:10,color:C.dim,marginTop:5}}>Default 1.40x</div>
+          </div>
+        </div>
+      </div>
+    ),
+    2:()=>(
+      <div className="fu" key={2}>
+        <SHead title="Floor Schedule" sub="Carpet area and listed sale rate per floor"/>
+        <div style={{display:'flex',flexDirection:'column',gap:10,marginBottom:14}}>
+          {form.floors.map((fl,i)=>{
+            const sba=(+fl.carpetArea||0)*form.loadingFactor;
+            const rev=sba*(+fl.saleRate||0);
+            return(
+              <div key={i} style={{background:C.elevated,border:`1px solid ${C.border}`,borderRadius:10,padding:'14px 16px'}}>
+                <div style={{display:'flex',alignItems:'center',gap:10,marginBottom:12}}>
+                  <input style={{...inp({padding:'7px 11px',flex:1,fontSize:12})}} value={fl.label} onChange={e=>{const f=[...form.floors];f[i]={...f[i],label:e.target.value};set('floors',f);}} placeholder="Floor label"/>
+                  {form.floors.length>1&&<button className="rmbtn" onClick={()=>set('floors',form.floors.filter((_,x)=>x!==i))} style={{background:'none',border:'none',color:C.red,fontSize:14,padding:'4px 8px',opacity:.45,transition:'opacity .15s'}}>✕</button>}
+                </div>
+                <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:10}}>
+                  <div><label style={lbl}>Carpet Area (sqft)</label><input style={inp()} type="number" value={fl.carpetArea} placeholder="e.g. 2500" onChange={e=>{const f=[...form.floors];f[i]={...f[i],carpetArea:e.target.value};set('floors',f);}}/></div>
+                  <div><label style={lbl}>Sale Rate (₹/sqft SBA)</label><input style={inp()} type="number" value={fl.saleRate} placeholder="e.g. 9500" onChange={e=>{const f=[...form.floors];f[i]={...f[i],saleRate:e.target.value};set('floors',f);}}/></div>
+                </div>
+                {rev>0&&<div style={{marginTop:8,display:'flex',gap:16}}><span style={{fontFamily:font.mono,fontSize:10,color:C.muted}}>SBA: {Math.round(sba).toLocaleString('en-IN')} sqft</span><span style={{fontFamily:font.mono,fontSize:10,color:C.gold}}>Revenue: {fmtINR(rev)}{crLabel(rev)?` (${crLabel(rev)})`:''}</span></div>}
+              </div>
+            );
+          })}
+        </div>
+        <button onClick={()=>set('floors',[...form.floors,{label:`Floor ${form.floors.length}`,carpetArea:'',saleRate:''}])} style={{background:'none',border:`1px dashed ${C.goldDim}`,borderRadius:8,color:C.gold,padding:'11px 20px',fontFamily:font.mono,fontSize:12,width:'100%'}}>+ Add Floor</button>
+        {tSBA>0&&<div style={{background:C.surface,border:`1px solid ${C.border}`,borderRadius:8,padding:'12px 16px',marginTop:14,display:'flex',justifyContent:'space-between',alignItems:'center'}}><span style={{fontFamily:font.ui,fontSize:10,color:C.muted,textTransform:'uppercase',letterSpacing:'0.1em',fontWeight:600}}>Total SBA</span><span style={{fontFamily:font.display,fontSize:20,color:C.gold}}>{Math.round(tSBA).toLocaleString('en-IN')} sqft</span></div>}
+      </div>
+    ),
+    3:()=>(
+      <div className="fu" key={3}>
+        <SHead title="Land Cost" sub="Three line items · exact ₹ values"/>
+        <div style={{display:'flex',flexDirection:'column',gap:20}}>
+          {[{key:'acquisition',label:'Land Acquisition'},{key:'stampDuty',label:'Registration & Stamp Duty'},{key:'brokerage',label:'Brokerage / Commission'}].map(item=>(
+            <div key={item.key}>
+              <label style={lbl}>{item.label}</label>
+              <div style={{position:'relative'}}>
+                <span style={{position:'absolute',left:13,top:'50%',transform:'translateY(-50%)',color:C.gold,fontFamily:font.mono,fontSize:13,pointerEvents:'none'}}>₹</span>
+                <input style={{...inp(),paddingLeft:26}} type="number" value={form.land[item.key]} onChange={e=>set(`land.${item.key}`,e.target.value)} placeholder="0"/>
+              </div>
+              {form.land[item.key]>0&&<div style={{fontFamily:font.mono,fontSize:10,color:C.gold,marginTop:5}}>{fmtINR(form.land[item.key])}{crLabel(form.land[item.key])?` · ${crLabel(form.land[item.key])}`:''}
+              </div>}
+            </div>
+          ))}
+          <TotalBar label="Total Land Cost" value={tLand}/>
+        </div>
+      </div>
+    ),
+    4:()=>(
+      <div className="fu" key={4}>
+        <SHead title="Construction" sub="Built-up area and rate per component"/>
+        <div style={{display:'flex',flexDirection:'column',gap:10,marginBottom:14}}>
+          {form.construction.map((comp,i)=>{
+            const area=comp.autoArea?tCarpet:(+comp.area||0);
+            const cost=area*(+comp.rate||0);
+            return(
+              <div key={i} style={{background:C.elevated,border:`1px solid ${comp.autoArea?C.goldDim:C.border}`,borderRadius:10,padding:'14px 16px'}}>
+                <div style={{display:'flex',gap:10,marginBottom:12,alignItems:'center'}}>
+                  <input style={{...inp({padding:'7px 11px',flex:1,fontSize:12})}} value={comp.name} placeholder="Component name" onChange={e=>{const c=[...form.construction];c[i]={...c[i],name:e.target.value};set('construction',c);}}/>
+                  {!comp.autoArea&&<button className="rmbtn" onClick={()=>set('construction',form.construction.filter((_,x)=>x!==i))} style={{background:'none',border:'none',color:C.red,fontSize:14,opacity:.45,transition:'opacity .15s'}}>✕</button>}
+                </div>
+                <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:10}}>
+                  <div>
+                    <label style={lbl}>Area (sqft){comp.autoArea&&<span style={{color:C.gold,marginLeft:6,fontWeight:400,textTransform:'none',letterSpacing:0}}>↩ from floors</span>}</label>
+                    {comp.autoArea?(
+                      <div style={{...inp({cursor:'default',color:C.gold,borderColor:C.goldDim,display:'flex',alignItems:'center',gap:8})}}><span style={{fontSize:11,opacity:.5}}>🔒</span>{tCarpet>0?tCarpet.toLocaleString('en-IN'):<span style={{color:C.dim}}>Enter floors first</span>}</div>
+                    ):(
+                      <input style={inp()} type="number" value={comp.area} placeholder="sqft" onChange={e=>{const c=[...form.construction];c[i]={...c[i],area:e.target.value};set('construction',c);}}/>
+                    )}
+                  </div>
+                  <div><label style={lbl}>Rate (₹/sqft)</label><input style={inp()} type="number" value={comp.rate} placeholder="₹/sqft" onChange={e=>{const c=[...form.construction];c[i]={...c[i],rate:e.target.value};set('construction',c);}}/></div>
+                </div>
+                {cost>0&&<div style={{marginTop:8,fontFamily:font.mono,fontSize:10,color:C.gold}}>= {fmtINR(cost)}{crLabel(cost)?` (${crLabel(cost)})`:''}</div>}
+              </div>
+            );
+          })}
+        </div>
+        <button onClick={()=>set('construction',[...form.construction,{name:'',area:'',rate:'',autoArea:false}])} style={{background:'none',border:`1px dashed ${C.goldDim}`,borderRadius:8,color:C.gold,padding:'11px 20px',fontFamily:font.mono,fontSize:12,width:'100%'}}>+ Add Component</button>
+        {tConst>0&&<TotalBar label="Total Construction Cost" value={tConst}/>}
+      </div>
+    ),
+    5:()=>(
+      <div className="fu" key={5}>
+        <SHead title="Interest & Finance" sub="Rate and tenure for construction and land capital"/>
+        <div style={{display:'flex',flexDirection:'column',gap:16}}>
+          {[{title:'Construction Interest',rk:'constructionRate',tk:'constructionTenure'},{title:'Land Interest',rk:'landRate',tk:'landTenure'}].map(b=>(
+            <div key={b.title} style={{background:C.elevated,border:`1px solid ${C.border}`,borderRadius:10,padding:'16px 18px'}}>
+              <div style={{fontFamily:font.display,fontSize:16,color:C.text,marginBottom:14}}>{b.title}</div>
+              <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:14}}>
+                <div><label style={lbl}>Rate (% p.a.)</label><input style={inp()} type="number" step="0.5" value={form.interest[b.rk]} onChange={e=>set(`interest.${b.rk}`,e.target.value)}/></div>
+                <div><label style={lbl}>Tenure (years)</label><input style={inp()} type="number" step="0.5" value={form.interest[b.tk]} onChange={e=>set(`interest.${b.tk}`,e.target.value)}/></div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    ),
+    6:()=>(
+      <div className="fu" key={6}>
+        <SHead title="Sale Rates & Exits" sub="Set your rates and choose exit strategies to model"/>
+        <div style={{display:'flex',flexDirection:'column',gap:16}}>
+          <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:14}}>
+            <div><label style={lbl}>Premium Rate (₹/sqft SBA)</label><input style={inp()} type="number" value={form.saleRates.premium} onChange={e=>set('saleRates.premium',e.target.value)} placeholder="e.g. 12000"/></div>
+            <div><label style={lbl}>Base Rate (₹/sqft SBA)</label><input style={inp()} type="number" value={form.saleRates.base} onChange={e=>set('saleRates.base',e.target.value)} placeholder="e.g. 10000"/></div>
+          </div>
+          <div>
+            <label style={lbl}>Monthly Rental (₹/sqft/month) <span style={{color:C.dim,fontWeight:400,textTransform:'none',letterSpacing:0}}>— for lease exit</span></label>
+            <input style={inp()} type="number" value={form.saleRates.rental} onChange={e=>set('saleRates.rental',e.target.value)} placeholder="e.g. 65"/>
+            {form.saleRates.rental>0&&<div style={{fontFamily:font.mono,fontSize:10,color:C.muted,marginTop:5}}>Post-lease rate = ₹{(form.saleRates.rental*2*100).toLocaleString('en-IN')}/sqft</div>}
+          </div>
+          <div style={{borderTop:`1px solid ${C.border}`,paddingTop:16}}>
+            <div style={{...lbl,marginBottom:12}}>Exit Strategies to Model</div>
+            <div style={{display:'flex',flexDirection:'column',gap:9}}>
+              {[{key:'duringConstruction',label:'Sell During Construction',note:'No interest cost'},{key:'outrightPremium',label:'Outright Sale @ Premium Rate',note:''},{key:'outrightBase',label:'Outright Sale @ Base Rate',note:''},{key:'floorByFloor',label:'Floor-by-Floor @ Market',note:'Post-completion'},{key:'leaseRental',label:'Lease / Rental Yield',note:'Uses rental rate above'}].map(opt=>(
+                <button key={opt.key} onClick={()=>set(`exits.${opt.key}`,!form.exits[opt.key])}
+                  style={{background:form.exits[opt.key]?`rgba(201,168,76,0.06)`:C.surface,border:`1px solid ${form.exits[opt.key]?C.gold:C.border}`,borderRadius:8,padding:'11px 14px',display:'flex',alignItems:'center',gap:12,textAlign:'left',transition:'all .15s',width:'100%'}}>
+                  <div style={{width:18,height:18,borderRadius:4,background:form.exits[opt.key]?C.gold:'transparent',border:`1.5px solid ${form.exits[opt.key]?C.gold:C.dim}`,display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0,transition:'all .15s'}}>
+                    {form.exits[opt.key]&&<span style={{color:C.bg,fontSize:10,fontWeight:900,lineHeight:1}}>✓</span>}
+                  </div>
+                  <div><span style={{fontFamily:font.mono,fontSize:12,color:form.exits[opt.key]?C.text:C.muted}}>{opt.label}</span>{opt.note&&<span style={{fontFamily:font.mono,fontSize:10,color:C.dim,marginLeft:8}}>· {opt.note}</span>}</div>
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+    ),
+    7:()=>(
+      <div className="fu" key={7}>
+        <SHead title="Investor Split" sub="Revenue sharing — investor vs developer"/>
+        <div style={{textAlign:'center',padding:'16px 0 24px'}}>
+          <div style={{fontFamily:font.display,fontSize:82,fontWeight:400,color:C.gold,lineHeight:1,letterSpacing:'-0.03em'}}>{form.investorShare}<span style={{fontSize:42}}>%</span></div>
+          <div style={{fontFamily:font.mono,fontSize:11,color:C.muted,marginTop:4,letterSpacing:'0.12em',textTransform:'uppercase'}}>Investor Share</div>
+          <div style={{marginTop:10,fontFamily:font.display,fontSize:28,color:C.text}}>{100-form.investorShare}% <em style={{color:C.muted,fontSize:20}}>developer</em></div>
+        </div>
+        <input type="range" min="30" max="80" step="5" value={form.investorShare} onChange={e=>set('investorShare',parseInt(e.target.value))} style={{marginBottom:8}}/>
+        <div style={{display:'flex',justifyContent:'space-between',fontFamily:font.mono,fontSize:10,color:C.dim,marginBottom:22}}><span>30%</span><span style={{color:C.goldDim}}>55% default</span><span>80%</span></div>
+        <div style={{marginBottom:16}}><label style={lbl}>Or enter exact value</label><input style={inp()} type="number" min="1" max="99" value={form.investorShare} onChange={e=>set('investorShare',parseInt(e.target.value)||55)}/></div>
+        <div style={{display:'grid',gridTemplateColumns:'1fr 1fr 1fr',gap:9}}>
+          {[30,40,50,55,60,70].map(v=>(
+            <button key={v} onClick={()=>set('investorShare',v)} style={{background:form.investorShare===v?`rgba(201,168,76,0.1)`:C.surface,border:`1px solid ${form.investorShare===v?C.gold:C.border}`,borderRadius:7,padding:'9px',fontFamily:font.mono,fontSize:12,color:form.investorShare===v?C.gold:C.muted,transition:'all .15s'}}>{v}% / {100-v}%</button>
+          ))}
+        </div>
+      </div>
+    ),
+    8:()=>{
+      const em={duringConstruction:'During Const.',outrightPremium:'@ Premium',outrightBase:'@ Base',floorByFloor:'Floor-by-Floor',leaseRental:'Lease/Rental'};
+      const activeExits=Object.entries(form.exits).filter(([,v])=>v).map(([k])=>em[k]);
+      const mDisplay={development:'Development Deal',outright:'Outright Purchase',both:'Both Models'}[form.mode];
+      const rows=[
+        {label:'Project',value:form.projectName||'—',sub:form.location},
+        {label:'Model',value:mDisplay},
+        {label:'Total SBA',value:`${Math.round(tSBA).toLocaleString('en-IN')} sqft`,sub:`${form.floors.length} floors · ${form.loadingFactor}x loading`},
+        {label:'Land Cost',value:fmtINR(tLand),sub:crLabel(tLand)},
+        {label:'Construction',value:fmtINR(tConst),sub:crLabel(tConst)},
+        {label:'Total Project Cost',value:fmtINR(tCost),sub:crLabel(tCost),hl:true},
+        {label:'Premium / Base',value:`₹${Number(form.saleRates.premium).toLocaleString('en-IN')} / ₹${Number(form.saleRates.base).toLocaleString('en-IN')}`},
+        {label:'Exits Modelled',value:activeExits.join('  ·  ')||'—'},
+        ...(form.mode!=='outright'?[{label:'Investor / Developer',value:`${form.investorShare}% · ${100-form.investorShare}%`}]:[]),
+      ];
+      return(
+        <div className="fu" key={8}>
+          <SHead title="Ready to Generate" sub="Review inputs — then copy prompt for Claude"/>
+          <div style={{display:'flex',flexDirection:'column',gap:9,marginBottom:24}}>
+            {rows.map(item=>(
+              <div key={item.label} style={{background:item.hl?`rgba(201,168,76,0.07)`:C.surface,border:`1px solid ${item.hl?C.gold:C.border}`,borderRadius:9,padding:'12px 16px',display:'flex',justifyContent:'space-between',alignItems:item.sub?'flex-start':'center'}}>
+                <div><div style={{fontFamily:font.ui,fontSize:10,color:C.muted,textTransform:'uppercase',letterSpacing:'0.1em',fontWeight:600}}>{item.label}</div>{item.sub&&<div style={{fontFamily:font.mono,fontSize:10,color:C.dim,marginTop:2}}>{item.sub}</div>}</div>
+                <div style={{fontFamily:item.hl?font.display:font.mono,fontSize:item.hl?22:13,color:item.hl?C.gold:C.text,textAlign:'right',maxWidth:'55%'}}>{item.value}</div>
+              </div>
+            ))}
+          </div>
+          <button className="genbtn" onClick={handleGenerate}
+            style={{width:'100%',padding:'17px 24px',background:`linear-gradient(135deg,#B8942A 0%,#E8C97A 45%,#C9A84C 100%)`,border:'none',borderRadius:11,fontFamily:font.display,fontSize:22,fontWeight:600,color:C.bg,letterSpacing:'-0.01em',boxShadow:'0 6px 32px rgba(201,168,76,0.22)',transition:'all .25s',cursor:'pointer'}}>
+            Generate Prompt →
+          </button>
+          <div style={{fontFamily:font.mono,fontSize:10,color:C.dim,textAlign:'center',marginTop:10}}>Copies a structured prompt · Paste into Claude to build the Excel workbook</div>
+        </div>
+      );
+    },
+  };
+
+  return(
+    <div style={{minHeight:'100vh',background:C.bg,paddingBottom:step>0?82:0}}>
+
+      {/* HEADER */}
+      <div style={{background:C.surface,borderBottom:`1px solid ${C.border}`,padding:'12px 22px',display:'flex',alignItems:'center',justifyContent:'space-between',position:'sticky',top:0,zIndex:20}}>
+        <div style={{display:'flex',alignItems:'center',gap:12}}>
+          <div style={{background:'white',borderRadius:8,padding:'4px 8px',display:'flex',alignItems:'center',justifyContent:'center',height:40}}>
+            <img src={`data:image/jpeg;base64,${LOGO_B64}`} alt="Amol Developers" style={{height:32,width:'auto',display:'block'}}/>
+          </div>
+          <div style={{width:1,height:28,background:C.border}}/>
+          <div>
+            <div style={{fontFamily:font.display,fontSize:14,color:C.text,lineHeight:1.1,fontWeight:500}}>Property Working</div>
+            <div style={{fontFamily:font.mono,fontSize:9,color:C.muted,letterSpacing:'0.16em',textTransform:'uppercase'}}>Feasibility Builder</div>
+          </div>
+        </div>
+        <div style={{display:'flex',alignItems:'center',gap:10}}>
+          {form.mode&&step>0&&<div style={{background:C.dim,borderRadius:5,padding:'3px 9px',fontFamily:font.ui,fontSize:9,color:C.muted,letterSpacing:'0.08em',textTransform:'uppercase'}}>{{development:'Dev Deal',outright:'Outright',both:'Both'}[form.mode]}</div>}
+          {step>0&&<div style={{fontFamily:font.mono,fontSize:10,color:C.dim}}>{dIdx}/{dTot}</div>}
+        </div>
+      </div>
+
+      {/* PROGRESS */}
+      {step>0&&<div style={{height:2,background:C.border}}><div style={{height:'100%',width:`${(dIdx/dTot)*100}%`,background:`linear-gradient(90deg,${C.goldDim},${C.gold})`,transition:'width .4s cubic-bezier(.4,0,.2,1)'}}/></div>}
+
+      {/* BREADCRUMB */}
+      {step>0&&step<8&&(
+        <div style={{overflowX:'auto',padding:'12px 22px 0',display:'flex',gap:5,scrollbarWidth:'none'}}>
+          {visLabels.map((label,i)=>(
+            <div key={label} style={{display:'flex',alignItems:'center',gap:5,flexShrink:0}}>
+              <div style={{width:20,height:20,borderRadius:'50%',border:`1.5px solid ${i<dIdx?C.goldDim:i===dIdx?C.gold:C.border}`,background:i<dIdx?`rgba(122,98,40,0.3)`:i===dIdx?`rgba(201,168,76,0.15)`:'transparent',display:'flex',alignItems:'center',justifyContent:'center',fontFamily:font.mono,fontSize:9,color:i<=dIdx?C.gold:C.dim}}>{i<dIdx?'✓':i+1}</div>
+              <span style={{fontFamily:font.ui,fontSize:9,color:i===dIdx?C.text:C.dim,fontWeight:i===dIdx?600:400,letterSpacing:'0.04em'}}>{label}</span>
+              {i<visLabels.length-1&&<span style={{color:C.dim,fontSize:11,marginLeft:2}}>›</span>}
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* CONTENT */}
+      <div style={{maxWidth:580,margin:'0 auto',padding:step===0?'40px 22px':'28px 22px 20px'}}>
+        {steps[step]&&steps[step]()}
+      </div>
+
+      {/* BOTTOM NAV */}
+      {step>0&&(
+        <div style={{position:'fixed',bottom:0,left:0,right:0,background:C.surface,borderTop:`1px solid ${C.border}`,padding:'13px 22px',display:'flex',gap:12,zIndex:20}}>
+          <button onClick={goPrev} style={{flex:1,background:'none',border:`1px solid ${C.border}`,borderRadius:9,color:C.muted,padding:'12px',fontFamily:font.mono,fontSize:12,transition:'all .2s'}}>← Back</button>
+          {step<MAX&&<button onClick={goNext} style={{flex:2.5,background:C.elevated,border:`1px solid ${C.border}`,borderRadius:9,color:C.text,padding:'12px 24px',fontFamily:font.display,fontSize:18,fontWeight:500,letterSpacing:'-0.01em',transition:'all .2s'}}>Continue →</button>}
+        </div>
+      )}
+
+      {/* MODAL */}
+      {showModal&&<PromptModal prompt={generatedPrompt} onClose={()=>setShowModal(false)}/>}
+    </div>
+  );
+}
+
+const root=ReactDOM.createRoot(document.getElementById('root'));
+root.render(<App/>);
+</script>
+</body>
+</html>
