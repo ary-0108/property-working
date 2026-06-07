@@ -86,7 +86,7 @@ function App(){
   const [generatedPrompt,setGeneratedPrompt]=useState('');
   const [form,setForm]=useState({
     mode:'',projectName:'',location:'Hyderabad',loadingFactor:1.40,
-    floors:[{label:'Ground Floor',carpetArea:'',saleRate:''},{label:'First Floor',carpetArea:'',saleRate:''}],
+    floors:[{label:'Ground Floor',carpetArea:'',rateType:'sale',saleRate:'',rentalRate:''},{label:'First Floor',carpetArea:'',rateType:'sale',saleRate:'',rentalRate:''}],
     land:{acquisition:'',stampDuty:'',brokerage:''},
     construction:[{name:'Residential Floors',area:'',rate:'',autoArea:true},{name:'Cellar / Basement',area:'',rate:'',autoArea:false}],
     interest:{constructionRate:12,constructionTenure:1,landRate:12,landTenure:2},
@@ -115,7 +115,12 @@ function App(){
     const mLabel={development:'Development Model',outright:'Outright Purchase Model',both:'Both Models'}[form.mode];
     let p=`Let's do the working for **${form.projectName}** in **${form.location}**.\n\n`;
     p+=`**Model:** ${mLabel}\n**Loading Factor:** ${form.loadingFactor}x\n\n**Floor Schedule:**\n`;
-    form.floors.forEach(f=>{p+=`- ${f.label}: Carpet ${f.carpetArea} sqft @ ₹${Number(f.saleRate).toLocaleString('en-IN')}/sqft SBA\n`;});
+    form.floors.forEach(f=>{
+      const rateStr=f.rateType==='rental'
+        ?`@ ₹${f.rentalRate}/sqft/month rental`
+        :`@ ₹${Number(f.saleRate).toLocaleString('en-IN')}/sqft SBA`;
+      p+=`- ${f.label}: Carpet ${f.carpetArea} sqft ${rateStr}\n`;
+    });
     p+=`\n**Land Cost:**\n- Acquisition: ₹${form.land.acquisition}\n- Stamp Duty & Registration: ₹${form.land.stampDuty}\n- Brokerage: ₹${form.land.brokerage}\n`;
     p+=`\n**Construction:**\n`;
     form.construction.forEach(c=>{const area=c.autoArea?tCarpet:(+c.area||0);p+=`- ${c.name}: ${area} sqft @ ₹${c.rate}/sqft\n`;});
@@ -176,11 +181,13 @@ function App(){
     ),
     2:()=>(
       <div className="fu" key={2}>
-        <SHead title="Floor Schedule" sub="Carpet area and listed sale rate per floor"/>
+        <SHead title="Floor Schedule" sub="Carpet area and rate per floor — sale or rental"/>
         <div style={{display:'flex',flexDirection:'column',gap:10,marginBottom:14}}>
           {form.floors.map((fl,i)=>{
             const sba=(+fl.carpetArea||0)*form.loadingFactor;
             const rev=sba*(+fl.saleRate||0);
+            const monthly=sba*(+fl.rentalRate||0);
+            const capVal=monthly*200;
             return(
               <div key={i} style={{background:C.elevated,border:`1px solid ${C.border}`,borderRadius:10,padding:'14px 16px'}}>
                 <div style={{display:'flex',alignItems:'center',gap:10,marginBottom:12}}>
@@ -189,14 +196,34 @@ function App(){
                 </div>
                 <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:10}}>
                   <div><label style={lbl}>Carpet Area (sqft)</label><input style={inp()} type="number" value={fl.carpetArea} placeholder="e.g. 2500" onChange={e=>{const f=[...form.floors];f[i]={...f[i],carpetArea:e.target.value};set('floors',f);}}/></div>
-                  <div><label style={lbl}>Sale Rate (₹/sqft SBA)</label><input style={inp()} type="number" value={fl.saleRate} placeholder="e.g. 9500" onChange={e=>{const f=[...form.floors];f[i]={...f[i],saleRate:e.target.value};set('floors',f);}}/></div>
+                  <div>
+                    <div style={{display:'flex',background:C.dim,borderRadius:6,padding:2,marginBottom:8}}>
+                      <button onClick={()=>{const f=[...form.floors];f[i]={...f[i],rateType:'sale'};set('floors',f);}}
+                        style={{flex:1,background:fl.rateType==='sale'?C.surface:'transparent',border:'none',borderRadius:5,color:fl.rateType==='sale'?C.gold:C.muted,padding:'5px 8px',fontFamily:font.mono,fontSize:10,letterSpacing:'0.06em',transition:'all .15s'}}>
+                        Sale Rate
+                      </button>
+                      <button onClick={()=>{const f=[...form.floors];f[i]={...f[i],rateType:'rental'};set('floors',f);}}
+                        style={{flex:1,background:fl.rateType==='rental'?C.surface:'transparent',border:'none',borderRadius:5,color:fl.rateType==='rental'?C.gold:C.muted,padding:'5px 8px',fontFamily:font.mono,fontSize:10,letterSpacing:'0.06em',transition:'all .15s'}}>
+                        Rental Rate
+                      </button>
+                    </div>
+                    {fl.rateType==='sale'
+                      ? <input style={inp()} type="number" value={fl.saleRate} placeholder="₹/sqft SBA" onChange={e=>{const f=[...form.floors];f[i]={...f[i],saleRate:e.target.value};set('floors',f);}}/>
+                      : <input style={inp()} type="number" value={fl.rentalRate} placeholder="₹/sqft/month" onChange={e=>{const f=[...form.floors];f[i]={...f[i],rentalRate:e.target.value};set('floors',f);}}/>
+                    }
+                  </div>
                 </div>
-                {rev>0&&<div style={{marginTop:8,display:'flex',gap:16}}><span style={{fontFamily:font.mono,fontSize:10,color:C.muted}}>SBA: {Math.round(sba).toLocaleString('en-IN')} sqft</span><span style={{fontFamily:font.mono,fontSize:10,color:C.gold}}>Revenue: {fmtINR(rev)}{crLabel(rev)?` (${crLabel(rev)})`:''}</span></div>}
+                <div style={{marginTop:8,display:'flex',gap:16,flexWrap:'wrap'}}>
+                  {sba>0&&<span style={{fontFamily:font.mono,fontSize:10,color:C.muted}}>SBA: {Math.round(sba).toLocaleString('en-IN')} sqft</span>}
+                  {fl.rateType==='sale'&&rev>0&&<span style={{fontFamily:font.mono,fontSize:10,color:C.gold}}>Revenue: {fmtINR(rev)}{crLabel(rev)?` (${crLabel(rev)})`:''}</span>}
+                  {fl.rateType==='rental'&&monthly>0&&<span style={{fontFamily:font.mono,fontSize:10,color:C.gold}}>Monthly: {fmtINR(monthly)}{crLabel(monthly)?` (${crLabel(monthly)})`:''}</span>}
+                  {fl.rateType==='rental'&&capVal>0&&<span style={{fontFamily:font.mono,fontSize:10,color:C.goldDim}}>Cap (×200): {fmtINR(capVal)}{crLabel(capVal)?` (${crLabel(capVal)})`:''}</span>}
+                </div>
               </div>
             );
           })}
         </div>
-        <button onClick={()=>set('floors',[...form.floors,{label:`Floor ${form.floors.length}`,carpetArea:'',saleRate:''}])} style={{background:'none',border:`1px dashed ${C.goldDim}`,borderRadius:8,color:C.gold,padding:'11px 20px',fontFamily:font.mono,fontSize:12,width:'100%'}}>+ Add Floor</button>
+        <button onClick={()=>set('floors',[...form.floors,{label:`Floor ${form.floors.length}`,carpetArea:'',rateType:'sale',saleRate:'',rentalRate:''}])} style={{background:'none',border:`1px dashed ${C.goldDim}`,borderRadius:8,color:C.gold,padding:'11px 20px',fontFamily:font.mono,fontSize:12,width:'100%'}}>+ Add Floor</button>
         {tSBA>0&&<div style={{background:C.surface,border:`1px solid ${C.border}`,borderRadius:8,padding:'12px 16px',marginTop:14,display:'flex',justifyContent:'space-between',alignItems:'center'}}><span style={{fontFamily:font.ui,fontSize:10,color:C.muted,textTransform:'uppercase',letterSpacing:'0.1em',fontWeight:600}}>Total SBA</span><span style={{fontFamily:font.display,fontSize:20,color:C.gold}}>{Math.round(tSBA).toLocaleString('en-IN')} sqft</span></div>}
       </div>
     ),
