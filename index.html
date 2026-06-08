@@ -8,7 +8,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400&family=DM+Mono:wght@300;400&family=Syne:wght@400;500;600;700&display=swap" rel="stylesheet"/>
 <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
 <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
-<script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+<script src="https://unpkg.com/@babel/standalone@7.23.2/babel.min.js"></script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0;}
 html,body{height:100%;background:#07080D;}
@@ -224,7 +224,7 @@ function App(){
           </div>
         </div>
         <div style={{background:C.elevated,border:`1px solid ${C.border}`,borderRadius:10,padding:'14px 16px',marginBottom:12}}>
-          <div style={{fontFamily:font.ui,fontSize:10,color:C.gold,textTransform:'uppercase',letterSpacing:'0.1em',fontWeight:600,marginBottom:12}}>📐 Plot & Site Data</div>
+          <div style={{fontFamily:font.ui,fontSize:10,color:C.gold,textTransform:'uppercase',letterSpacing:'0.1em',fontWeight:600,marginBottom:12}}>📐 Plot &amp; Site Data</div>
           <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:10,marginBottom:10}}>
             <div>
               <label style={lbl}>Plot Area</label>
@@ -242,7 +242,7 @@ function App(){
             <div><label style={lbl}>Survey Number</label><input style={inp()} value={form.surveyNo} onChange={e=>set('surveyNo',e.target.value)} placeholder="e.g. 143/2"/></div>
             <div><label style={lbl}>Location Pin</label><input style={inp()} value={form.locationPin} onChange={e=>set('locationPin',e.target.value)} placeholder="maps.google.com/?q=…"/></div>
           </div>
-          {(form.roadWidth||form.surveyNo)&&<div style={{marginTop:10,fontFamily:font.mono,fontSize:9,color:C.goldDim}}>→ Claude will apply GO Ms. No. 168 / TG-bPASS to derive setbacks, coverage & permissible height</div>}
+          {(form.roadWidth||form.surveyNo)&&<div style={{marginTop:10,fontFamily:font.mono,fontSize:9,color:C.goldDim}}>→ Claude will apply GO Ms. No. 168 / TG-bPASS to derive setbacks, coverage &amp; permissible height</div>}
         </div>
       </div>
     );
@@ -332,7 +332,7 @@ function App(){
         <SHead title="Land Cost" sub="Investor capital outlay"/>
         <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:12,marginBottom:12}}>
           <div style={{gridColumn:'1/-1'}}><label style={lbl}>Acquisition (₹) *</label><input style={inp()} type="number" value={form.land.acq} onChange={e=>set('land.acq',e.target.value)} placeholder="e.g. 25000000"/>{form.land.acq&&<div style={{fontFamily:font.mono,fontSize:10,color:C.goldDim,marginTop:4}}>{crLabel(form.land.acq)}</div>}</div>
-          <div><label style={lbl}>Stamp Duty & Reg (₹)</label><input style={inp()} type="number" value={form.land.stamp} onChange={e=>set('land.stamp',e.target.value)} placeholder="0"/></div>
+          <div><label style={lbl}>Stamp Duty &amp; Reg (₹)</label><input style={inp()} type="number" value={form.land.stamp} onChange={e=>set('land.stamp',e.target.value)} placeholder="0"/></div>
           <div><label style={lbl}>Brokerage (₹)</label><input style={inp()} type="number" value={form.land.brok} onChange={e=>set('land.brok',e.target.value)} placeholder="0"/></div>
           <div><label style={lbl}>Goodwill / NTC (₹)</label><input style={inp()} type="number" value={form.land.goodwill} onChange={e=>set('land.goodwill',e.target.value)} placeholder="0 if none"/></div>
           <div>
@@ -422,7 +422,7 @@ function App(){
 
     if(step===7)return(
       <div className="fu" key={7}>
-        <SHead title="Sale Rates & Exits" sub="Rate mode and scenarios to model"/>
+        <SHead title="Sale Rates &amp; Exits" sub="Rate mode and scenarios to model"/>
         <div style={{marginBottom:14}}>
           <label style={lbl}>Rate Input Mode</label>
           <div style={{display:'flex',background:C.dim,borderRadius:7,padding:3,marginBottom:form.rateMode==='global'?12:0}}>
@@ -518,7 +518,7 @@ function App(){
       const allOk=checks.every(c=>c.ok);
       return(
         <div className="fu" key={9}>
-          <SHead title="Review & Generate" sub="Check summary then generate your input prompt"/>
+          <SHead title="Review &amp; Generate" sub="Check summary then generate your input prompt"/>
           <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:10,marginBottom:16}}>
             <div style={{background:C.elevated,border:`1px solid ${C.border}`,borderRadius:10,padding:'12px 14px'}}>
               <div style={{fontFamily:font.mono,fontSize:9,color:C.muted,textTransform:'uppercase',letterSpacing:'0.1em',marginBottom:6}}>📍 Project</div>
